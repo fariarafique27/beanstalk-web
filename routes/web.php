@@ -7,12 +7,16 @@ use App\Http\Middleware\EnsureFrontendAuthenticated;
 use App\Http\Middleware\RedirectIfFrontendAuthenticated;
 use App\Http\Controllers\SuperAdminController;
 
-// Redirect root to dashboard or login
+//Redirect root to dashboard or login
 Route::get('/', function () {
+    
     return session('is_logged_in') 
         ? redirect()->route('super-admin.dashboard') 
         : redirect()->route('login');
 });
+
+//Route::get('login',[AuthController::class,'getLogin'])->name('login');
+Route::get('/',[AuthController::class,'getLogin'])->name('login');
 
 // Guest Routes (Public)
 Route::middleware([RedirectIfFrontendAuthenticated::class])->group(function () {
