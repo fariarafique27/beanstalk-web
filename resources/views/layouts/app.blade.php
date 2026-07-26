@@ -129,11 +129,20 @@
 <body>
 
     @php
-        $authUser = auth()->user();
-        $userPerms = is_array($authUser?->permissions) 
-            ? $authUser->permissions 
-            : json_decode($authUser?->permissions ?? '[]', true);
+        // Pull user details and permissions safely from the Guzzle session
+        $userData = session('user', []);
+        $userRole = session('role') ?? $userData['role'] ?? 'admin';
+        
+        $sessionPerms = session('permissions', []);
+        $userPerms = is_array($sessionPerms) && !empty($sessionPerms) 
+            ? $sessionPerms 
+            : ($userData['permissions'] ?? []);
     @endphp
+
+    {{-- TEMPORARY DEBUG: Delete this after checking --}}
+    <!-- <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
+        Role: {{ $userRole }} | Perms: {{ json_encode($userPerms) }}
+    </div>   -->
 
     <!-- Desktop Sidebar -->
     <aside class="sidebar d-none d-lg-flex flex-column justify-content-between p-3">
@@ -144,22 +153,22 @@
                 </div>
                 <div>
                     <h6 class="fw-extrabold mb-0 text-white tracking-tight">HRMS Core</h6>
-                    <span class="fs-8 text-white-50">Super Admin Console</span>
+                    <span class="fs-8 text-white-50">Console</span>
                 </div>
             </div>
 
             <hr class="border-secondary opacity-25 my-2">
 
             <nav class="mt-3">
-                {{-- Overview (Visible to everyone) --}}
-                <a href="{{ route('super-admin.dashboard') }}" class="nav-link {{ request()->routeIs('super-admin.dashboard') ? 'active' : '' }}">
-                    <i class="ti ti-dashboard fs-5"></i> Overview
+                {{-- Link 1: Dashboard (Always visible) --}}
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="ti ti-dashboard fs-5"></i> Dashboard
                 </a>
 
-                {{-- Employee Directory (Conditional Check) --}}
-                @if($authUser?->role === 'super_admin' || in_array('employees.manage', $userPerms ?? []))
-                    <a href="#" class="nav-link">
-                        <i class="ti ti-users fs-5"></i> Employees
+                {{-- Link 2: Organizations (Visible only if authorized) --}}
+                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
+                    <a href="{{ route('organizations.index') }}" class="nav-link {{ request()->routeIs('organizations.*') ? 'active' : '' }}">
+                        <i class="ti ti-building fs-5"></i> Organizations
                     </a>
                 @endif
             </nav>
@@ -185,13 +194,19 @@
         </div>
         <div class="offcanvas-body d-flex flex-column justify-content-between p-3">
             <nav class="mt-2">
-                <a href="{{ route('super-admin.dashboard') }}" class="nav-link {{ request()->routeIs('super-admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="ti ti-dashboard fs-5"></i> Overview
                 </a>
 
-                @if($authUser?->role === 'super_admin' || in_array('employees.manage', $userPerms ?? []))
+                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('employees.manage', $userPerms))
                     <a href="#" class="nav-link">
                         <i class="ti ti-users fs-5"></i> Employees
+                    </a>
+                @endif
+
+                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('org-admins.invite', $userPerms))
+                    <a href="#" class="nav-link">
+                        <i class="ti ti-building-community fs-5"></i> Invite Admin
                     </a>
                 @endif
             </nav>
@@ -219,10 +234,10 @@
                         <div class="avatar-initials rounded-circle bg-primary text-white fs-8 fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
                             SA
                         </div>
-                        <span class="fw-semibold fs-7 text-dark d-none d-sm-inline">{{ session('user.name') ?? $authUser?->name ?? 'Super Admin' }}</span>
+                        <span class="fw-semibold fs-7 text-dark d-none d-sm-inline">{{ session('user.name') ?? 'Admin User' }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 p-2 fs-7">
-                        <li><span class="dropdown-item-text text-muted fs-8">{{ session('user.email') ?? $authUser?->email ?? 'admin@hrms.com' }}</span></li>
+                        <li><span class="dropdown-item-text text-muted fs-8">{{ session('user.email') ?? 'admin@hrms.com' }}</span></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form action="{{ route('logout') }}" method="POST">
@@ -244,4 +259,4 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html>OrgAdminController

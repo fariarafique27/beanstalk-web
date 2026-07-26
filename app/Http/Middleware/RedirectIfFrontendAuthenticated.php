@@ -11,7 +11,7 @@ class RedirectIfFrontendAuthenticated
     {
         // If already logged in, don't let them hit /login again
         if (session()->has('is_logged_in') && session()->has('auth_token')) {
-            return redirect()->route('super-admin.dashboard');
+            return redirect()->route('dashboard');
         }
 
         return $next($request);

@@ -33,7 +33,8 @@
                     @endif
 
                     {{-- Login Form --}}
-                    <form action="{{ route('login') }}" method="POST">
+                    <!-- <form action="{{ route('login') }}" method="POST"> -->
+                        <form action="{{ url('/login') }}" method="POST">
                         @csrf
                         
                         <div class="mb-3">

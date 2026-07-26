@@ -31,7 +31,7 @@ class SuperAdminController extends Controller
 
             $data = $response->json('data') ?? $response->json() ?? [];
 
-            return view('super-admin.dashboard', [
+            return view('dashboard', [
                 'organizations' => $data['organizations'] ?? [],
                 'stats'         => $data['stats'] ?? [
                     'total_orgs'      => 0,
@@ -44,7 +44,7 @@ class SuperAdminController extends Controller
             Log::error('Dashboard API Error: ' . $e->getMessage());
 
             // Return view with empty data if backend server is unreachable
-           return view('super-admin.dashboard', [
+           return view('dashboard', [
                 'organizations' => [],
                 'stats'         => ['total_orgs' => 0, 'active_admins' => 0, 'pending_invites' => 0],
                 'api_error'     => 'Unable to fetch real-time dashboard data from backend.',
