@@ -1,64 +1,55 @@
-<?php
+    <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PasswordSetupController;
-use App\Http\Middleware\EnsureFrontendAuthenticated;
-use App\Http\Middleware\RedirectIfFrontendAuthenticated;
-use App\Http\Controllers\SuperAdminController;
-use App\Http\Controllers\OrgAdminController;
+    use Illuminate\Support\Facades\Route;
+    use App\Http\Controllers\AuthController;
+    use App\Http\Controllers\PasswordSetupController;
+    use App\Http\Middleware\EnsureFrontendAuthenticated;
+    use App\Http\Middleware\RedirectIfFrontendAuthenticated;
+    use App\Http\Controllers\SuperAdminController;
+    use App\Http\Controllers\OrgAdminController;
+    use App\Http\Controllers\CompanyController;
 
-Route::middleware(['web'])->group(function () {
-    // Show the invite/create form
-    Route::get('/org-admins/invite', [OrgAdminController::class, 'createOrgAdmin'])->name('org-admins.invite');
+    Route::get('/', [CompanyController::class, 'dashboard']);
+
+    // Route::middleware(['web'])->group(function () {
+    //     // Show the invite/create form
+    //     Route::get('/org-admins/invite', [OrgAdminController::class, 'createOrgAdmin'])->name('org-admins.invite');
+        
+    //     // Handle the form submission
+    //     Route::post('/org-admins/invite', [OrgAdminController::class, 'storeOrgAdmin'])->name('org-admins.store');
+    // });
     
-    // Handle the form submission
-    Route::post('/org-admins/invite', [OrgAdminController::class, 'storeOrgAdmin'])->name('org-admins.store');
-});
+    // Guest Routes (Public)
+    Route::middleware([RedirectIfFrontendAuthenticated::class])->group(function () {
+        Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    });
 
-//Redirect root to dashboard or login
-Route::get('/', function () {
-    
-    return session('is_logged_in') 
-        ? redirect()->route('dashboard') 
-        : redirect()->route('login');
-});
+    // Account activation / Set Password link from invite email
+    // MUST be outside RedirectIfFrontendAuthenticated so logged-in admins testing links aren't bumped to dashboard!
+    Route::get('/set-password', [PasswordSetupController::class, 'showForm'])->name('password.set');
+    Route::post('/set-password', [PasswordSetupController::class, 'submit'])->name('password.submit');
 
+    // Protected Super Admin Routes
+    Route::middleware([EnsureFrontendAuthenticated::class])->group(function () {
 
-Route::get('/',[AuthController::class,'getLogin'])->name('login');
+        // Route 1: The standard Dashboard (Shows welcome message)
+        Route::get('/dashboard', function () {
+            return view('dashboard'); // Your welcome view
+        })->name('dashboard');
 
-// Guest Routes (Public)
-Route::middleware([RedirectIfFrontendAuthenticated::class])->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-});
+        // Route 2: The Organizations page (Shows the organization management table)
+        Route::get('/organizations', [OrgAdminController::class, 'index'])->name('organizations.index');
 
-// Account activation / Set Password link from invite email
-// MUST be outside RedirectIfFrontendAuthenticated so logged-in admins testing links aren't bumped to dashboard!
-Route::get('/set-password', [PasswordSetupController::class, 'showForm'])->name('password.set');
-Route::post('/set-password', [PasswordSetupController::class, 'submit'])->name('password.submit');
+        // Org Admin Invite Routes
+        Route::get('/org-admin/create', [OrgAdminController::class, 'createOrgAdmin']);
+        Route::get('/org-admins/invite', [OrgAdminController::class, 'createOrgAdmin'])->name('org-admins.invite');
+        Route::post('/org-admins/invite', [OrgAdminController::class, 'storeOrgAdmin'])->name('org-admins.store');
 
-// Protected Super Admin Routes
-Route::middleware([EnsureFrontendAuthenticated::class])->group(function () {
+        // New Dynamic Action Routes
+        Route::put('/organizations/{id}', [OrgAdminController::class, 'updateOrgAdmin'])->name('organizations.update');
+        Route::delete('/organizations/{id}', [OrgAdminController::class, 'destroyOrgAdmin'])->name('organizations.destroy');
+        Route::post('/organizations/{id}/resend', [OrgAdminController::class, 'resendInvite'])->name('organizations.resend');
 
-    // Route 1: The standard Dashboard (Shows welcome message)
-    Route::get('/dashboard', function () {
-        return view('dashboard'); // Your welcome view
-    })->name('dashboard');
-
-    // Route 2: The Organizations page (Shows the organization management table)
-    Route::get('/organizations', [OrgAdminController::class, 'index'])->name('organizations.index');
-    Route::get('/org-admins/invite', [OrgAdminController::class, 'createOrgAdmin'])->name('org-admins.invite');
-    Route::post('/org-admins/invite', [OrgAdminController::class, 'storeOrgAdmin'])->name('org-admins.store');
-
-    // Org Admin Invite Routes
-    Route::get('/org-admins/invite', [OrgAdminController::class, 'createOrgAdmin'])->name('org-admins.invite');
-    Route::post('/org-admins/invite', [OrgAdminController::class, 'storeOrgAdmin'])->name('org-admins.store');
-
-     // New Dynamic Action Routes
-    Route::put('/organizations/{id}', [OrgAdminController::class, 'updateOrgAdmin'])->name('organizations.update');
-    Route::delete('/organizations/{id}', [OrgAdminController::class, 'destroyOrgAdmin'])->name('organizations.destroy');
-    Route::post('/organizations/{id}/resend', [OrgAdminController::class, 'resendInvite'])->name('organizations.resend');
-
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-});
+        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    });

@@ -50,7 +50,15 @@ class OrgAdminController extends Controller
             'pending_invites' => collect($organizations)->where('status', '!=', 'active')->count()
         ];
 
-        return view('organizations.index', compact('organizations', 'stats'));
+       // return view('organizations.index', compact('organizations', 'stats'));
+
+       $permResponse = \Illuminate\Support\Facades\Http::get('http://127.0.0.1:8000/api/permissions');
+        $permissions = $permResponse->successful() ? $permResponse->json('data') : [];
+        // -------------------------------------
+
+        // Pass $permissions into the view along with your other variables
+        return view('organizations.index', compact('organizations', 'stats', 'permissions'));
+        
     }
 
     public function createOrgAdmin()
@@ -65,21 +73,72 @@ class OrgAdminController extends Controller
                 ->withErrors(['error' => 'Unauthorized action. Super Admin privileges required.']);
         }
 
-        return view('org-admins.invite');
+        // --- FETCH PERMISSIONS FROM YOUR BACKEND API ---
+        $response = \Illuminate\Support\Facades\Http::get('http://127.0.0.1:8000/api/permissions');
+        $permissions = $response->successful() ? $response->json('data') : [];
+
+       // return view('org-admins.invite');
+       return view('org-admins.invite', compact('permissions'));
     }
+
+    // public function storeOrgAdmin(Request $request)
+    // {
+    //     logger('--- 1. STORE ORG ADMIN CALLED ---', [
+    //         'all_input' => $request->all(),
+    //         'permissions' => $request->input('permissions')
+    //     ]);
+
+    //     $userData = session('user', []);
+    //     $userRole = session('role') ?? $userData['role'] ?? 'admin';
+    //     $userPerms = session('permissions', $userData['permissions'] ?? []);
+
+    //     if ($userRole !== 'super_admin' && $userRole !== 'super-admin' && !in_array('org-admins.invite', $userPerms)) {
+    //         logger('--- 2. UNAUTHORIZED ACCESS ATTEMPT ---', ['role' => $userRole, 'perms' => $userPerms]);
+    //         return redirect()->route('dashboard')
+    //             ->withErrors(['error' => 'Unauthorized action.']);
+    //     }
+
+    //    logger('--- 3. SENDING REQUEST TO AUTH SERVICE ---', $request->all());
+    //     $response = $this->authService->post('org-admins/invite', $request->all());
+
+    //     logger('--- 4. RESPONSE RECEIVED FROM AUTH SERVICE ---', ['response' => $response]);
+    //     if (!$response['success']) {
+    //         return redirect()->back()
+    //             ->withErrors($response['errors'] ?? ['error' => $response['message']])
+    //             ->withInput();
+    //     }
+
+    //     // ADD IT HERE (For successful form submission)
+    //     return redirect()->route('organizations.index')->with('success', $response['message']);
+    // }
 
     public function storeOrgAdmin(Request $request)
     {
+        logger('--- 1. STORE ORG ADMIN CALLED ---', [
+            'all_input' => $request->all(),
+            'permissions' => $request->input('permissions')
+        ]);
+
         $userData = session('user', []);
         $userRole = session('role') ?? $userData['role'] ?? 'admin';
         $userPerms = session('permissions', $userData['permissions'] ?? []);
 
-        if ($userRole !== 'super_admin' && $userRole !== 'super-admin' && !in_array('org-admins.invite', $userPerms)) {
+        // DEBUG: See exactly what role and perms are being read right now
+        logger('CURRENT USER CHECK:', ['role' => $userRole, 'perms' => $userPerms]);
+
+        // Temporarily change this condition or force your role to pass
+        if ($userRole !== 'super_admin' && $userRole !== 'super-admin' && $userRole !== 'admin') {
+            logger('--- 2. UNAUTHORIZED ACCESS ATTEMPT ---', ['role' => $userRole]);
             return redirect()->route('dashboard')
                 ->withErrors(['error' => 'Unauthorized action.']);
         }
 
+        logger('--- 3. SENDING REQUEST TO AUTH SERVICE ---', $request->all());
+
         $response = $this->authService->post('org-admins/invite', $request->all());
+        //dd($response);
+
+        logger('--- 4. RESPONSE RECEIVED FROM AUTH SERVICE ---', ['response' => $response]);
 
         if (!$response['success']) {
             return redirect()->back()
@@ -87,10 +146,8 @@ class OrgAdminController extends Controller
                 ->withInput();
         }
 
-        // ADD IT HERE (For successful form submission)
         return redirect()->route('organizations.index')->with('success', $response['message']);
     }
-
 
 
     // Update Organization / Admin Details

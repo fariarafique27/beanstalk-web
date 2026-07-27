@@ -67,6 +67,19 @@ class AuthController extends Controller
             $payload = $response['data'] ?? $response;
             $token   = $payload['token'] ?? null;
 
+            $roles = $payload['roles'] ?? [];
+            $isSuperAdmin = in_array('Super Admin', $roles) || ($payload['is_root'] ?? false);
+
+            // Pull permissions from API, and ensure root/super admins have everything needed
+            $permissions = $payload['permissions'] ?? [];
+            if ($isSuperAdmin) {
+                // Ensure Super Admin has access to invite org admins and manage employees
+                $permissions = array_unique(array_merge($permissions, [
+                    'org-admins.invite', 
+                    'employees.manage'
+                ]));
+            }
+
             if (!$token) {
                 return back()->withErrors(['email' => 'Authentication token was not provided by API.'])
                              ->onlyInput('email');
@@ -76,6 +89,8 @@ class AuthController extends Controller
             session([
                 'auth_token'     => $token,
                 'user'           => $payload,
+                'role'           => $isSuperAdmin ? 'super_admin' : 'admin',
+                'permissions'    => $permissions,
                 'index_name'     => $payload['index_name'] ?? null,
                 'chatbot_status' => $payload['chatbot_status'] ?? false,
                 'is_logged_in'   => true,

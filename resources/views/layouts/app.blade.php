@@ -140,9 +140,9 @@
     @endphp
 
     {{-- TEMPORARY DEBUG: Delete this after checking --}}
-    <!-- <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
+    <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
         Role: {{ $userRole }} | Perms: {{ json_encode($userPerms) }}
-    </div>   -->
+    </div>  
 
     <!-- Desktop Sidebar -->
     <aside class="sidebar d-none d-lg-flex flex-column justify-content-between p-3">
@@ -165,10 +165,24 @@
                     <i class="ti ti-dashboard fs-5"></i> Dashboard
                 </a>
 
-                {{-- Link 2: Organizations (Visible only if authorized) --}}
+                {{-- Link 2: Organizations (Super Admin only) --}}
                 @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
                     <a href="{{ route('organizations.index') }}" class="nav-link {{ request()->routeIs('organizations.*') ? 'active' : '' }}">
                         <i class="ti ti-building fs-5"></i> Organizations
+                    </a>
+                @endif
+
+                {{-- Link 3: Employees (Visible if permitted) --}}
+                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('employees.manage', $userPerms))
+                    <a href="#" class="nav-link">
+                        <i class="ti ti-users fs-5"></i> Employees
+                    </a>
+                @endif
+
+                {{-- Link 4: Invite Admin (Visible if permitted) --}}
+                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('org-admins.invite', $userPerms))
+                    <a href="{{ route('org-admins.invite') }}" class="nav-link">
+                        <i class="ti ti-building-community fs-5"></i> Invite Admin
                     </a>
                 @endif
             </nav>
@@ -198,6 +212,12 @@
                     <i class="ti ti-dashboard fs-5"></i> Overview
                 </a>
 
+                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
+                    <a href="{{ route('organizations.index') }}" class="nav-link">
+                        <i class="ti ti-building fs-5"></i> Organizations
+                    </a>
+                @endif
+
                 @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('employees.manage', $userPerms))
                     <a href="#" class="nav-link">
                         <i class="ti ti-users fs-5"></i> Employees
@@ -205,7 +225,7 @@
                 @endif
 
                 @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('org-admins.invite', $userPerms))
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('org-admins.invite') }}" class="nav-link">
                         <i class="ti ti-building-community fs-5"></i> Invite Admin
                     </a>
                 @endif

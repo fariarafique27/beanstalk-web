@@ -16,10 +16,10 @@
         <p class="text-secondary mb-0 fs-7">Manage tenant organizations, track invitations, and monitor global HR operations.</p>
     </div>
     
-    <div class="w-100 w-md-auto d-flex align-items-center">
-        <button class="btn btn-primary w-100 w-md-auto px-3.5 py-2.5 shadow-sm fw-semibold rounded-3 d-flex align-items-center justify-content-center gap-2 text-white" data-bs-toggle="modal" data-bs-target="#createOrgAdminModal">
-            <i class="ti ti-plus fs-5"></i> Add New Organization
-        </button>
+    <div class="w-100 w-md-auto d-flex align-items-center justify-content-end ms-md-auto">
+            <button class="btn btn-primary px-3.5 py-2.5 shadow-sm fw-semibold rounded-3 d-flex align-items-center justify-content-center gap-2 text-white" data-bs-toggle="modal" data-bs-target="#createOrgAdminModal">
+                <i class="ti ti-plus fs-5"></i> Add New Organization
+            </button>
     </div>
 </div>
 
@@ -163,7 +163,7 @@
                                     <span class="badge bg-light text-secondary border border-light-subtle rounded-2 fs-8 fw-medium">
                                         {{ trim($perm) }}
                                     </span>
-                                @end
+                                @endforeach
                                 
                             </div>
                         </td>
@@ -238,9 +238,17 @@
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('org-admins.invite') }}" method="POST">
+            <!-- <form action="{{ route('org-admins.invite') }}" method="POST"> -->
+                <form action="{{ route('org-admins.store') }}" method="POST">
                 @csrf
                 <div class="modal-body p-3 p-md-4 bg-white">
+                    {{-- Modal Validation Error Alert --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger border-0 shadow-sm rounded-3 py-2 px-3 mb-3 d-flex align-items-center gap-2">
+                            <i class="ti ti-alert-circle fs-5 text-danger"></i>
+                            <span class="fs-8">Please fix the errors below before submitting.</span>
+                        </div>
+                    @endif
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold fs-7 text-dark">Organization / Company Name</label>
@@ -258,54 +266,22 @@
                     </div>
 
                     <div class="my-4 border-top"></div>
-
                     <h6 class="fw-bold fs-7 text-dark mb-3"><i class="ti ti-shield-lock me-1 text-primary"></i> Grant Module Permissions</h6>
-                    <div class="row g-3">
-                        <div class="col-12 col-md-6">
-                            <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="fw-bold fs-7 mb-0">Employee Directory</h6>
-                                    <span class="fs-8 text-muted">Manage staff records & contracts</span>
+                        <div class="row g-3">
+                            @foreach($permissions as $permission)
+                                <div class="col-12 col-md-6">
+                                    <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h6 class="fw-bold fs-7 mb-0">{{ ucwords(str_replace('.', ' ', is_array($permission) ? $permission['name'] : $permission->name)) }}</h6>
+                                            <span class="fs-8 text-muted">Manage records & access</span>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ is_array($permission) ? $permission['name'] : $permission->name }}">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="employees.manage" checked>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="fw-bold fs-7 mb-0">Payroll & Finance</h6>
-                                    <span class="fs-8 text-muted">Process salary payouts & tax slips</span>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="payroll.manage">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="fw-bold fs-7 mb-0">Attendance & Leave</h6>
-                                    <span class="fs-8 text-muted">Time logs and leave approvals</span>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="attendance.manage" checked>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="fw-bold fs-7 mb-0">Settings & Logs</h6>
-                                    <span class="fs-8 text-muted">Configure company global rules</span>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="settings.manage">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="modal-footer bg-light p-3 border-0">
                     <button type="button" class="btn btn-light px-4 fs-7 rounded-2" data-bs-dismiss="modal">Cancel</button>
