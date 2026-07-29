@@ -40,6 +40,9 @@ class   GuzzleApiService
 
     public function request($method, $uri, $data = [], $isMultipart = false)
     {
+
+  
+
         $token = session()->get('auth_token') ?? session()->get('user.token');
         
         try {
@@ -54,13 +57,19 @@ class   GuzzleApiService
             if (!empty($token)) {
                 $options['headers']['Authorization'] = "Bearer {$token}";
             }
+            $fullUrl = $this->client->getConfig('base_uri') . ltrim($uri, '/');
 
             Log::info('GUZZLE REQUEST HEADERS & TOKEN CHECK:', [
-                'uri' => $uri,
+                'base_uri' => $this->client->getConfig('base_uri'),
                 'has_token' => !empty($token),
+                'relative_uri' => $uri,
+                'computed_full_url' => $fullUrl,
                 'token_snippet' => $token ? substr($token, 0, 10) . '...' : 'NULL',
                 'headers_sent' => $options['headers']
             ]);
+
+              
+
             
             // Forward decrypt token from web session if present
             if (session()->has('decrypt_token')) {

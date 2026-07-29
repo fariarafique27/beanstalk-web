@@ -15,6 +15,7 @@ class CompanyController extends Controller
 
     public function dashboard(){
         logger('dashboard - CompanyController ');
+        logger('All Session Data:', session()->all());
     try{
         return $this->profileService->dashboard();
     }

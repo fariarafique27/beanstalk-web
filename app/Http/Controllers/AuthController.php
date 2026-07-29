@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Services\AuthService;
+use App\Http\Requests\LoginRequest;
 
 class AuthController extends Controller
 {
@@ -20,36 +21,32 @@ class AuthController extends Controller
             return $this->authService->getLogin();
         }
         catch(\Throwable $e){
-           // return $this->getException($e);
-          return $this->authService->getException($e);
+            return $this->getException($e);
         }
 
     }
     
-    // public function showLogin()
-    // {
-    //     return view('auth.login');
-    // }
-    
-    public function showLogin()
-    {
-        // If the user is already logged in, redirect them away from the login page
-        if (session()->has('user.token')) {
-            return redirect()->route('dashboard');
+    public function redirectToLogin(){
+        try{
+            return $this->authService->redirectToLogin();
+        }
+        catch(\Throwable $e){
+            return $this->getException($e);
         }
 
-        // Clear out any stray tokens or reset states so they don't trigger redirects
-        session()->forget(['token', 'email']); 
-
-        return view('auth.login');
+    }
+    public function postLogin(LoginRequest $request){
+        logger("called postLogin ");
+        try{
+            return $this->authService->postLogin($request);
+        }
+        catch(\Throwable $e){
+            return $this->getException($e);
+        }
     }
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
 
         try {
             // Use your Guzzle-powered AuthService
@@ -105,56 +102,6 @@ class AuthController extends Controller
         }
     }
     
-    // public function login(Request $request)
-    // {
-    //     $request->validate([
-    //         'email'    => 'required|email',
-    //         'password' => 'required',
-    //     ]);
-
-    //     $baseUrl = config('api.backend_url', 'http://127.0.0.1:8000/api');
-
-    //     try {
-    //         // Force JSON headers to ensure API returns structured JSON error responses
-    //         $response = Http::acceptJson()->post("{$baseUrl}/login", [
-    //             'email'    => $request->email,
-    //             'password' => $request->password,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         Log::error("Backend connection failure: " . $e->getMessage());
-    //         return back()->withErrors(['email' => 'Unable to connect to authentication server.'])
-    //                      ->onlyInput('email');
-    //     }
-
-    //     // Handle HTTP failures (401, 403, 422, 500)
-    //     if ($response->failed()) {
-    //         $errorMessage = $response->json('message') 
-    //             ?? $response->json('error') 
-    //             ?? 'Invalid credentials or inactive account.';
-
-    //         return back()->withErrors(['email' => $errorMessage])
-    //                      ->onlyInput('email');
-    //     }
-
-    //     $resJson = $response->json();
-    //     $payload = $resJson['data'] ?? $resJson;
-    //     $token   = $payload['token'] ?? null;
-
-    //     if (!$token) {
-    //         return back()->withErrors(['email' => 'Authentication token was not provided by API.']);
-    //     }
-
-    //     // Store user payload and session state
-    //     session([
-    //         'auth_token'     => $token,
-    //         'user'           => $payload,
-    //         'index_name'     => $payload['index_name'] ?? null,
-    //         'chatbot_status' => $payload['chatbot_status'] ?? false,
-    //         'is_logged_in'   => true,
-    //     ]);
-
-    //     return redirect()->route('dashboard');
-    // }
 
     public function logout(Request $request)
     {

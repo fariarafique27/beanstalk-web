@@ -6,7 +6,11 @@ class ProfileService extends GuzzleApiService
 {
     public function dashboard(){
 
-        $token = session()->get('user.token');
+    // --- ADD THESE LOGS TO INSPECT EVERYTHING ---
+    logger('--- DEBUGGING DASHBOARD SESSION ---');
+    logger('Full Session Payload:', session()->all());
+
+        $token = session()->get('user.token') ?? session()->get('auth_token');
         logger('ProfileService dashboard called. Token status: ' . ($token ? 'Present' : 'Null'));
 
         if($token==null) {
@@ -14,9 +18,8 @@ class ProfileService extends GuzzleApiService
             return redirect()->route('login');
         }
         $role = session()->get('user.role');
-        logger('User role found: ' . $role);
 
-        if(session()->get('user.role') == 'Super Admin'){
+        if(session()->get('role') == 'super_admin'){
             logger('Executing Super Admin dashboard branch.');
             $response = $this->get('super-admin/dashboard');
 
@@ -43,59 +46,10 @@ class ProfileService extends GuzzleApiService
         //     return view('compaines.dashboard.dashboard');
         // }
 
-        $dashboardCount = $this->get('dashboard');
-        if ($dashboardCount instanceof \Illuminate\Http\RedirectResponse) {
-            return $dashboardCount;
-        }
-        if (!$dashboardCount['success']) {
-            session()->forget('user');
-            session()->forget('decrypt_token');
-            return redirect()->back()
-                ->withErrors(isset($dashboardCount['errors']) ? $dashboardCount['errors']  : ['error' => $dashboardCount['message']])
-                ->withInput();
-        }
-
-        $upcomingHolidaysResponse = $this->get('holidays/upcoming');
-        if ($upcomingHolidaysResponse instanceof \Illuminate\Http\RedirectResponse) {
-            return $upcomingHolidaysResponse;
-        }
-        if (!$upcomingHolidaysResponse['success']) {
-            return redirect()->back()
-                ->withErrors(isset($upcomingHolidaysResponse['errors']) ? $upcomingHolidaysResponse['errors']  : ['error' => $upcomingHolidaysResponse['message']])
-                ->withInput();
-        }
 
 
-        $graphData = [];
-        if (in_array('employee.read', $permissions, true)) {
-            $countEmp = $this->get('count/employee/departments');
-            if ($countEmp instanceof \Illuminate\Http\RedirectResponse) {
-                return $countEmp;
-            }
-            if (!$countEmp['success']) {
-                return redirect()->back()
-                    ->withErrors(isset($countEmp['errors']) ? $countEmp['errors']  : ['error' => $countEmp['message']])
-                    ->withInput();
-            }
-            $graphData = $countEmp['data']['dataGraph'] ?? [];
-        }
 
-        $payslips = [];
-        if (in_array('my_payslip.read', $permissions, true)) {
-            $myPayslipResponse = $this->get('myPayslip');
-            if (!($myPayslipResponse instanceof \Illuminate\Http\RedirectResponse) && $myPayslipResponse['success']) {
-                $payslips = array_slice($myPayslipResponse['data']['payslips'] ?? [], 0, 3);
-            }
-        }
-
-        $dataCount        = $dashboardCount['data']['dashboard'] ?? [];
-        $birthdays        = $dashboardCount['data']['dashboard']['birthdays'] ?? [];
-        // $employees        = $dashboardCount['data']['dashboard']['employees'] ?? [];
-        $workAnniversary  = $dashboardCount['data']['dashboard']['workAnniversary'] ?? [];
-        $myEmployee       = $dashboardCount['data']['dashboard']['my_profile'] ?? null;
-        $upcomingHolidays = $upcomingHolidaysResponse['data']['upcoming_holidays'] ?? [];
-
-        return view('compaines.dashboard.dashboard', compact('dataCount', 'graphData', 'birthdays', 'workAnniversary', 'upcomingHolidays', 'payslips', 'myEmployee'));
+        return view('compaines.dashboard');
 
     }
 }

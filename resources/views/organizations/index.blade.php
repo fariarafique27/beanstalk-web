@@ -154,17 +154,42 @@
                                 </span>
                             @endif
                         </td>
+
                         <td>
                             <div class="d-flex gap-1 flex-wrap">
                                 @php
-                                    $perms = is_array($org['permissions'] ?? null) ? $org['permissions'] : explode(',', $org['permissions'] ?? 'Standard');
+                                    $rawPerms = $org['permissions'] ?? ['Standard'];
+                                    
+                                    // Normalize into a flat array of strings
+                                    if (is_string($rawPerms)) {
+                                        $rawPerms = explode(',', $rawPerms);
+                                    } elseif (is_object($rawPerms) && method_exists($rawPerms, 'toArray')) {
+                                        $rawPerms = $rawPerms->toArray();
+                                    }
+                                    
+                                    if (!is_array($rawPerms)) {
+                                        $rawPerms = [(string)$rawPerms];
+                                    }
                                 @endphp
-                                @foreach($perms as $perm)
-                                    <span class="badge bg-light text-secondary border border-light-subtle rounded-2 fs-8 fw-medium">
-                                        {{ trim($perm) }}
-                                    </span>
+
+                                @foreach($rawPerms as $perm)
+                                    @php
+                                        // Extract text safely without trim()
+                                        if (is_array($perm)) {
+                                            $text = $perm['name'] ?? $perm['title'] ?? json_encode($perm);
+                                        } elseif (is_object($perm)) {
+                                            $text = $perm->name ?? $perm->title ?? '';
+                                        } else {
+                                            $text = (string) $perm;
+                                        }
+                                    @endphp
+
+                                    @if(!empty($text) && !is_array($text))
+                                        <span class="badge bg-light text-secondary border border-light-subtle rounded-2 fs-8 fw-medium">
+                                            {{ (string) $text }}
+                                        </span>
+                                    @endif
                                 @endforeach
-                                
                             </div>
                         </td>
                         <td class="pe-4 text-end">
