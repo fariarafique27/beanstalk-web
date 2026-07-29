@@ -11,19 +11,15 @@
 
     Route::get('/', [CompanyController::class, 'dashboard']);
 
-    // Route::middleware(['web'])->group(function () {
-    //     // Show the invite/create form
-    //     Route::get('/org-admins/invite', [OrgAdminController::class, 'createOrgAdmin'])->name('org-admins.invite');
-        
-    //     // Handle the form submission
-    //     Route::post('/org-admins/invite', [OrgAdminController::class, 'storeOrgAdmin'])->name('org-admins.store');
-    // });
-    
-    // Guest Routes (Public)
-    Route::middleware([RedirectIfFrontendAuthenticated::class])->group(function () {
-        Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-    });
+
+    Route::get('/login', [AuthController::class, 'getLogin'])->name('login');
+    // Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+     Route::post('/login', [AuthController::class, 'postLogin'])->name('login.submit');
+    Route::get('redirectToLogin',[AuthController::class,'redirectToLogin'])->name('redirectToLogin');
+
+    //TODO:::::::::::
+    // Route::post('login',[AuthController::class,'postLogin'])->name('login.post');
+
 
     // Account activation / Set Password link from invite email
     // MUST be outside RedirectIfFrontendAuthenticated so logged-in admins testing links aren't bumped to dashboard!
@@ -34,9 +30,10 @@
     Route::middleware([EnsureFrontendAuthenticated::class])->group(function () {
 
         // Route 1: The standard Dashboard (Shows welcome message)
-        Route::get('/dashboard', function () {
-            return view('dashboard'); // Your welcome view
-        })->name('dashboard');
+        // Route::get('/dashboard', function () {
+        //     return view('dashboard'); // Your welcome view
+        // })->name('dashboard');
+        Route::get('/dashboard',[CompanyController::class,'dashboard'])->name('dashboard');
 
         // Route 2: The Organizations page (Shows the organization management table)
         Route::get('/organizations', [OrgAdminController::class, 'index'])->name('organizations.index');

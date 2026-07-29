@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -9,8 +10,10 @@ class RedirectIfFrontendAuthenticated
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // If already logged in, don't let them hit /login again
-        if (session()->has('is_logged_in') && session()->has('auth_token')) {
+        // Check using user.token to match your new authentication standard
+        $token = session()->get('user.token');
+
+        if ($token !== null) {
             return redirect()->route('dashboard');
         }
 
