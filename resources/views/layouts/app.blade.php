@@ -137,12 +137,14 @@
         $userPerms = is_array($sessionPerms) && !empty($sessionPerms) 
             ? $sessionPerms 
             : ($userData['permissions'] ?? []);
+
+           
     @endphp
 
     {{-- TEMPORARY DEBUG: Delete this after checking --}}
-    <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
+    <!-- <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
         Role: {{ $userRole }} | Perms: {{ json_encode($userPerms) }}
-    </div>  
+    </div>   -->
 
     <!-- Desktop Sidebar -->
     <aside class="sidebar d-none d-lg-flex flex-column justify-content-between p-3">
@@ -166,25 +168,33 @@
                 </a>
 
                 {{-- Link 2: Organizations (Super Admin only) --}}
-                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
+                @if($userRole === 'super_admin'|| in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
                     <a href="{{ route('organizations.index') }}" class="nav-link {{ request()->routeIs('organizations.*') ? 'active' : '' }}">
                         <i class="ti ti-building fs-5"></i> Organizations
                     </a>
                 @endif
 
-                {{-- Link 3: Employees (Visible if permitted) --}}
-                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('employees.manage', $userPerms))
+              {{-- Link 3: Attendances --}}
+                @if($userRole === 'super_admin' || in_array('attendances.view', $userPerms))
+                    <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
+                        <i class="ti ti-clock-check fs-5"></i> Attendances
+                    </a>
+                @endif
+
+                {{-- Link 4: Employees (Visible if permitted) --}}
+                @if($userRole === 'super_admin'|| in_array('employees.manage', $userPerms))
                     <a href="#" class="nav-link">
                         <i class="ti ti-users fs-5"></i> Employees
                     </a>
                 @endif
 
-                {{-- Link 4: Invite Admin (Visible if permitted) --}}
-                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('org-admins.invite', $userPerms))
+                {{-- Link 5: Invite Admin (Visible if permitted) --}}
+                @if($userRole === 'super_admin' || in_array('org-admins.invite', $userPerms))
                     <a href="{{ route('org-admins.invite') }}" class="nav-link">
                         <i class="ti ti-building-community fs-5"></i> Invite Admin
                     </a>
                 @endif
+
             </nav>
         </div>
 
@@ -212,23 +222,30 @@
                     <i class="ti ti-dashboard fs-5"></i> Overview
                 </a>
 
-                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
+                @if($userRole === 'super_admin' || in_array('read_organizations', $userPerms) || in_array('manage_organizations', $userPerms))
                     <a href="{{ route('organizations.index') }}" class="nav-link">
                         <i class="ti ti-building fs-5"></i> Organizations
                     </a>
                 @endif
 
-                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('employees.manage', $userPerms))
+                @if($userRole === 'super_admin' || in_array('employees.manage', $userPerms))
                     <a href="#" class="nav-link">
                         <i class="ti ti-users fs-5"></i> Employees
                     </a>
                 @endif
 
-                @if($userRole === 'super_admin' || $userRole === 'super-admin' || in_array('org-admins.invite', $userPerms))
+                @if($userRole === 'super_admin' || in_array('org-admins.invite', $userPerms))
                     <a href="{{ route('org-admins.invite') }}" class="nav-link">
                         <i class="ti ti-building-community fs-5"></i> Invite Admin
                     </a>
                 @endif
+
+                @if($userRole === 'super_admin' || in_array('attendances.view', $userPerms))
+                    <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
+                        <i class="ti ti-clock-check fs-5"></i> Attendances
+                    </a>
+                @endif
+
             </nav>
             <div>
                 <a href="#" class="nav-link text-white-50">
@@ -279,4 +296,4 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>OrgAdminController
+</html>

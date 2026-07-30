@@ -9,9 +9,6 @@
     <div>
         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
             <h3 class="fw-bold tracking-tight mb-0">System Overview</h3>
-            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fs-8 fw-semibold">
-                <i class="ti ti-point-filled"></i> API Connected
-            </span>
         </div>
         <p class="text-secondary mb-0 fs-7">Manage tenant organizations, track invitations, and monitor global HR operations.</p>
     </div>

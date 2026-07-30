@@ -116,6 +116,7 @@ class   GuzzleApiService
 
             return $this->errorResponse('Server responded with a status code of ' . $status, [], $status);
     } catch (\Exception $e) {
+
     // Log the EXACT error so we can see what's going wrong
     logger()->error("Guzzle Absolute Failure: " . $e->getMessage());
 

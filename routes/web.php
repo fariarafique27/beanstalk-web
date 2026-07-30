@@ -8,6 +8,7 @@
     use App\Http\Controllers\SuperAdminController;
     use App\Http\Controllers\OrgAdminController;
     use App\Http\Controllers\CompanyController;
+    use App\Http\Controllers\AttendanceController;
 
     Route::get('/', [CompanyController::class, 'dashboard']);
 
@@ -22,7 +23,6 @@
 
 
     // Account activation / Set Password link from invite email
-    // MUST be outside RedirectIfFrontendAuthenticated so logged-in admins testing links aren't bumped to dashboard!
     Route::get('/set-password', [PasswordSetupController::class, 'showForm'])->name('password.set');
     Route::post('/set-password', [PasswordSetupController::class, 'submit'])->name('password.submit');
 
@@ -48,5 +48,9 @@
         Route::delete('/organizations/{id}', [OrgAdminController::class, 'destroyOrgAdmin'])->name('organizations.destroy');
         Route::post('/organizations/{id}/resend', [OrgAdminController::class, 'resendInvite'])->name('organizations.resend');
 
+
+        Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
+        Route::get('/attendances/{id}', [AttendanceController::class, 'show'])->name('attendances.show');
+        
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
