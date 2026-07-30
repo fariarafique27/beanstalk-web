@@ -109,6 +109,7 @@
         .stat-card.card-accent-primary { border-top-color: var(--primary-color) !important; }
         .stat-card.card-accent-success { border-top-color: #10b981 !important; }
         .stat-card.card-accent-warning { border-top-color: #f59e0b !important; }
+        .stat-card.card-accent-danger { border-top-color: #ef4444 !important; }
 
         .stat-card:hover {
             transform: translateY(-3px);

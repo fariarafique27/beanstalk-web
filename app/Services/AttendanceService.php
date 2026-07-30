@@ -23,20 +23,40 @@ class AttendanceService extends GuzzleApiService
     //     return $response['data'] ?? $response;
     // }
 
-    public function getFilteredAttendanceDetails($id, $request)
-    {
-        try {
-            $response = $this->get("attendances/{$id}", $request->all());
-            //dd('Raw Guzzle Return Value:', $response);
-            if (isset($response['success']) && $response['success'] && isset($response['data'])) {
-                return $response['data']; // Returns the paginator array (containing "data", "links", etc.)
-            }
+    // public function getFilteredAttendanceDetails($id, $request)
+    // {
+    //     try {
+    //         $response = $this->get("attendances/{$id}", $request->all());
+    //         //dd('Raw Guzzle Return Value:', $response);
+    //         if (isset($response['success']) && $response['success'] && isset($response['data'])) {
+    //             return $response['data']; // Returns the paginator array (containing "data", "links", etc.)
+    //         }
 
-            return [];
-        } catch (\Exception $e) {
-            logger()->error('Attendance Service Error: ' . $e->getMessage());
-            return [];
+    //         return [];
+    //     } catch (\Exception $e) {
+    //         logger()->error('Attendance Service Error: ' . $e->getMessage());
+    //         return [];
+    //     }
+    // }
+
+    public function getFilteredAttendanceDetails($id, $request)
+{
+    try {
+        $response = $this->get("attendances/{$id}", $request->all());
+
+        logger('[GUZZLE] raw response from backend API', ['response' => $response]);
+
+        if (isset($response['success']) && $response['success'] && isset($response['data'])) {
+            logger('[GUZZLE] returning data key', ['data' => $response['data']]);
+            return $response['data'];
         }
+
+        logger('[GUZZLE] success/data missing, returning empty array', ['response' => $response]);
+        return [];
+    } catch (\Exception $e) {
+        logger()->error('[GUZZLE] Attendance Service Error: ' . $e->getMessage());
+        return [];
     }
+}
     
 }

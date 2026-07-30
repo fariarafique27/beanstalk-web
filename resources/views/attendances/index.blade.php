@@ -56,21 +56,117 @@
 
     <!-- Main Data Section -->
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="card-header bg-white border-bottom border-light p-3 p-md-3.5 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div class="card-header bg-white border-bottom border-light p-3 p-md-3.5 d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
             <div>
                 <h5 class="fw-bold mb-0 text-dark">Attendance Logs</h5>
                 <span class="fs-8 text-secondary">Real-time listing of daily employee clock-ins and status</span>
             </div>
-            <div class="d-flex align-items-center gap-2 w-100 w-sm-auto">
-                <div class="input-group input-group-sm search-box w-100">
-                    <span class="input-group-text bg-light border-0"><i class="ti ti-search text-secondary"></i></span>
-                    <input type="text" class="form-control bg-light border-0" placeholder="Search attendance...">
+
+            <div class="d-flex align-items-center gap-2 flex-nowrap attendance-controls">
+                <!-- Status Filter Pills -->
+                <div class="filter-pill-group" id="statusFilterGroup">
+                    <button type="button" class="filter-pill active" data-filter="all">All</button>
+                    <button type="button" class="filter-pill" data-filter="present">Present</button>
+                    <button type="button" class="filter-pill" data-filter="absent">Absent</button>
+                </div>
+
+                <!-- Search Box -->
+                <div class="search-box-compact">
+                    <i class="ti ti-search"></i>
+                    <input type="text" id="attendanceSearchInput" placeholder="Search...">
                 </div>
             </div>
         </div>
 
+        <style>
+            .attendance-controls {
+                flex-shrink: 0;
+            }
+
+            .filter-pill-group {
+                display: inline-flex;
+                background: #f1f3f5;
+                border-radius: 8px;
+                padding: 3px;
+                gap: 2px;
+            }
+
+            .filter-pill {
+                border: none;
+                background: transparent;
+                color: #6c757d;
+                font-size: 0.78rem;
+                font-weight: 600;
+                padding: 5px 12px;
+                border-radius: 6px;
+                white-space: nowrap;
+                transition: all 0.15s ease;
+            }
+
+            .filter-pill:hover {
+                color: #212529;
+            }
+
+            .filter-pill.active {
+                background: #ffffff;
+                color: #212529;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            }
+
+            .filter-pill[data-filter="present"].active {
+                color: #198754;
+            }
+
+            .filter-pill[data-filter="absent"].active {
+                color: #dc3545;
+            }
+
+            .search-box-compact {
+                display: flex;
+                align-items: center;
+                background: #f1f3f5;
+                border-radius: 8px;
+                padding: 6px 10px;
+                gap: 6px;
+                width: 160px;
+                transition: width 0.15s ease;
+            }
+
+            .search-box-compact:focus-within {
+                width: 200px;
+                background: #e9ecef;
+            }
+
+            .search-box-compact i {
+                color: #6c757d;
+                font-size: 0.85rem;
+                flex-shrink: 0;
+            }
+
+            .search-box-compact input {
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 0.8rem;
+                width: 100%;
+                color: #212529;
+            }
+
+            @media (max-width: 576px) {
+                .attendance-controls {
+                    width: 100%;
+                }
+                .search-box-compact {
+                    width: 100%;
+                }
+                .filter-pill-group {
+                    flex-shrink: 0;
+                }
+            }
+        </style>
+
         <div class="table-responsive">
-            <table class="table table-borderless table-hover align-middle mb-0" style="min-width: 700px;">
+            <table class="table table-borderless table-hover align-middle mb-0" id="attendanceTable" style="min-width: 700px;">
                 <thead class="bg-light-subtle text-secondary fs-8 text-uppercase tracking-wider">
                     <tr>
                         <th class="ps-4 py-3">User ID</th>
@@ -81,21 +177,25 @@
                         <th class="pe-4 py-3 text-end">Action</th>
                     </tr>
                 </thead>
-                <tbody class="fs-7">
+                <tbody class="fs-7" id="attendanceTableBody">
                     @forelse($attendances as $item)
                         @php
-                            // Safely convert item to an array whether it's an array or an object
                             $itemArray = is_array($item) ? $item : (is_object($item) ? (array) $item : []);
+                            $rowStatus = strtolower($itemArray['status'] ?? 'absent');
+                            $rowUserId = $itemArray['user_id'] ?? $itemArray['id'] ?? '';
+                            $rowName = $itemArray['user_name'] ?? '';
                         @endphp
 
                         @if(!empty($itemArray))
-                            <tr class="border-bottom border-light-subtle">
-                                <td class="ps-4 text-secondary fw-medium">#{{ $itemArray['user_id'] ?? $itemArray['id'] ?? 'N/A' }}</td>
-                                <td class="fw-semibold text-dark">{{ $itemArray['user_name'] ?? 'N/A' }}</td>
-                                <td class="text-secondary">{{ $itemArray['check_in'] ?? 'N/A' }}</td>
-                                <td class="text-secondary">{{ $itemArray['check_out'] ?? 'N/A' }}</td>
+                            <tr class="border-bottom border-light-subtle attendance-row"
+                                data-status="{{ $rowStatus }}"
+                                data-search="{{ strtolower($rowUserId . ' ' . $rowName) }}">
+                                <td class="ps-4 text-secondary fw-medium">#{{ $rowUserId ?: '—' }}</td>
+                                <td class="fw-semibold text-dark">{{ $rowName ?: '—' }}</td>
+                                <td class="text-secondary">{{ $itemArray['check_in'] ?? '—' }}</td>
+                                <td class="text-secondary">{{ $itemArray['check_out'] ?? '—' }}</td>
                                 <td>
-                                    @if(isset($itemArray['status']) && strtolower($itemArray['status']) === 'present')
+                                    @if($rowStatus === 'present')
                                         <span class="badge status-badge bg-success-subtle text-success rounded-pill px-3 py-1">
                                             <i class="ti ti-point-filled"></i> Present
                                         </span>
@@ -106,28 +206,78 @@
                                     @endif
                                 </td>
                                 <td class="pe-4 text-end">
-                                    <a href="{{ route('attendances.show', $itemArray['employee_id'] ?? ($itemArray['user_id'] ?? 1)) }}" class="btn btn-light btn-sm rounded-2 fw-semibold px-2.5 py-1.5 d-inline-flex align-items-center gap-1 text-primary">
+                                    <a href="{{ route('attendances.show', $itemArray['employee_id'] ?? ($rowUserId ?: 1)) }}" class="btn btn-light btn-sm rounded-2 fw-semibold px-2.5 py-1.5 d-inline-flex align-items-center gap-1 text-primary">
                                         <i class="ti ti-history fs-5"></i> History Logs
                                     </a>
                                 </td>
                             </tr>
                         @endif
                     @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <div class="empty-state p-4">
-                                    <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-secondary">
-                                        <i class="ti ti-calendar-off fs-1"></i>
-                                    </div>
-                                    <h6 class="fw-bold text-dark mb-1">No Attendance Records Found</h6>
-                                    <p class="text-secondary fs-7 mb-0">No attendance records found for today.</p>
-                                </div>
-                            </td>
-                        </tr>
                     @endforelse
                 </tbody>
             </table>
+
+            <!-- Empty state shown/hidden via JS when filters match nothing -->
+            <div id="noResultsState" class="text-center py-5 d-none">
+                <div class="empty-state p-4">
+                    <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-secondary">
+                        <i class="ti ti-calendar-off fs-1"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">No Matching Records</h6>
+                    <p class="text-secondary fs-7 mb-0">Try a different search term or filter.</p>
+                </div>
+            </div>
+
+            @if(empty($attendances))
+                <div class="text-center py-5">
+                    <div class="empty-state p-4">
+                        <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-secondary">
+                            <i class="ti ti-calendar-off fs-1"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">No Attendance Records Found</h6>
+                        <p class="text-secondary fs-7 mb-0">No attendance records found for today.</p>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('attendanceSearchInput');
+    const filterButtons = document.querySelectorAll('#statusFilterGroup button');
+    const rows = document.querySelectorAll('#attendanceTableBody .attendance-row');
+    const noResultsState = document.getElementById('noResultsState');
+
+    let currentStatusFilter = 'all';
+
+    function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+            const matchesStatus = currentStatusFilter === 'all' || row.dataset.status === currentStatusFilter;
+            const matchesSearch = query === '' || row.dataset.search.includes(query);
+            const isVisible = matchesStatus && matchesSearch;
+
+            row.classList.toggle('d-none', !isVisible);
+            if (isVisible) visibleCount++;
+        });
+
+        noResultsState.classList.toggle('d-none', visibleCount !== 0 || rows.length === 0);
+    }
+
+    filterButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStatusFilter = btn.dataset.filter;
+            applyFilters();
+        });
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+});
+</script>
 @endsection
