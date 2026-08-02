@@ -40,23 +40,23 @@ class AttendanceService extends GuzzleApiService
     // }
 
     public function getFilteredAttendanceDetails($id, $request)
-{
-    try {
-        $response = $this->get("attendances/{$id}", $request->all());
+    {
+        try {
+            $response = $this->get("attendances/{$id}", $request->all());
 
-        logger('[GUZZLE] raw response from backend API', ['response' => $response]);
+            logger('[GUZZLE] raw response from backend API', ['response' => $response]);
 
-        if (isset($response['success']) && $response['success'] && isset($response['data'])) {
-            logger('[GUZZLE] returning data key', ['data' => $response['data']]);
-            return $response['data'];
+            if (isset($response['success']) && $response['success'] && isset($response['data'])) {
+                logger('[GUZZLE] returning data key', ['data' => $response['data']]);
+                return $response['data'];
+            }
+
+            logger('[GUZZLE] success/data missing, returning empty array', ['response' => $response]);
+            return [];
+        } catch (\Exception $e) {
+            logger()->error('[GUZZLE] Attendance Service Error: ' . $e->getMessage());
+            return [];
         }
-
-        logger('[GUZZLE] success/data missing, returning empty array', ['response' => $response]);
-        return [];
-    } catch (\Exception $e) {
-        logger()->error('[GUZZLE] Attendance Service Error: ' . $e->getMessage());
-        return [];
     }
-}
     
 }

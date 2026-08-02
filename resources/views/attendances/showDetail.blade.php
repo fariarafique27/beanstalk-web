@@ -60,7 +60,7 @@
                         <th class="pe-4 py-3">Status</th>
                     </tr>
                 </thead>
-                <tbody class="fs-7">
+                <!-- <tbody class="fs-7">
                     @forelse($attendances['data'] ?? [] as $item)
                         @php
                             $itemArray = is_array($item) ? $item : (is_object($item) ? (array) $item : []);
@@ -81,6 +81,67 @@
                                     {{ $itemArray['remarks'] ?? '—' }}
                                 </td>
                                 <td class="pe-4">
+                                    @if(isset($itemArray['status']) && strtolower($itemArray['status']) === 'present')
+                                        <span class="badge status-badge bg-success-subtle text-success rounded-pill px-3 py-1">
+                                            <i class="ti ti-point-filled"></i> Present
+                                        </span>
+                                    @else
+                                        <span class="badge status-badge bg-danger-subtle text-danger rounded-pill px-3 py-1">
+                                            <i class="ti ti-point-filled"></i> {{ ucfirst($itemArray['status'] ?? 'Absent') }}
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endif
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="empty-state p-4">
+                                    <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-secondary">
+                                        <i class="ti ti-calendar-off fs-1"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">No History Logs Found</h6>
+                                    <p class="text-secondary fs-7 mb-0">No attendance logs found matching your filters.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody> -->
+                <tbody class="fs-7">
+                    @forelse($attendances['data'] ?? [] as $item)
+                        @php
+                            $itemArray = is_array($item) ? $item : (is_object($item) ? (array) $item : []);
+                            $checkIns = $itemArray['check_ins'] ?? [];
+                            $checkOuts = $itemArray['check_outs'] ?? [];
+                        @endphp
+
+                        @if(!empty($itemArray))
+                            <tr class="border-bottom border-light-subtle align-top">
+                                <td class="ps-4 text-secondary fw-medium py-3">
+                                    {{ $itemArray['attendance_date'] ?? '—' }}
+                                </td>
+                                <td class="text-secondary py-3">
+                                    @forelse($checkIns as $time)
+                                        <div class="d-flex align-items-center gap-1 mb-1">
+                                            <i class="ti ti-login-2 text-success fs-6"></i> {{ $time }}
+                                        </div>
+                                    @empty
+                                        —
+                                    @endforelse
+                                </td>
+                                <td class="text-secondary py-3">
+                                    @forelse($checkOuts as $time)
+                                        <div class="d-flex align-items-center gap-1 mb-1">
+                                            <i class="ti ti-logout-2 text-danger fs-6"></i> {{ $time }}
+                                        </div>
+                                    @empty
+                                        —
+                                    @endforelse
+                                </td>
+                                <td class="text-secondary py-3">
+                                    {{ $itemArray['remarks'] ?? '—' }}
+                                </td>
+                                <td class="pe-4 py-3">
                                     @if(isset($itemArray['status']) && strtolower($itemArray['status']) === 'present')
                                         <span class="badge status-badge bg-success-subtle text-success rounded-pill px-3 py-1">
                                             <i class="ti ti-point-filled"></i> Present
