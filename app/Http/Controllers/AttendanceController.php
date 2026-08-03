@@ -16,13 +16,8 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         try {
-            $response = $this->attendanceService->getAttendances($request->all());
-            
-            $attendances = $response['data'] ?? [];
-            $totalPresent = $response['total_present'] ?? 0;
-            $totalAbsent = $response['total_absent'] ?? 0;
-
-            return view('attendances.index', compact('attendances', 'totalPresent', 'totalAbsent'));
+            return $this->attendanceService->getAttendances($request->all());   
+           
         } catch (\Throwable $e) {
             return $this->getException($e);
         }
