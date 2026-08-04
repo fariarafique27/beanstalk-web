@@ -20,6 +20,9 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    {{-- Sync success/error messages render here instead of alert() --}}
+    <div id="sync-alert-container"></div>
+
     <form method="POST" action="{{ route('settings.device.update') }}" id="device-form">
         @csrf
         <fieldset id="device-fields" @if($device) disabled @endif>
@@ -49,19 +52,30 @@
         </button>
 
         @if($device)
-            <button type="button" class="btn btn-link" id="edit-toggle-btn">Edit</button>
+            <button type="button" class="btn btn-primary" id="edit-toggle-btn">Edit</button>
         @endif
     </form>
 </div>
 
 <script>
-// FIX #1/#2: unlock fields for editing
+
 document.getElementById('edit-toggle-btn')?.addEventListener('click', function () {
     const fieldset = document.getElementById('device-fields');
     fieldset.disabled = false;
     fieldset.querySelector('input[name="ip"]').focus();
     this.style.display = 'none';
 });
+
+function showSyncAlert(message, isError) {
+    const container = document.getElementById('sync-alert-container');
+    const type = isError ? 'danger' : 'success';
+    container.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+}
 
 // Sync Now (unchanged behavior, just relocated in the markup above)
 document.getElementById('sync-now-btn')?.addEventListener('click', function () {
@@ -71,13 +85,17 @@ document.getElementById('sync-now-btn')?.addEventListener('click', function () {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
     })
-    .then(r => r.json())
-    .then(res => {
-        alert(res.message);
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        showSyncAlert(data.message, !ok);
+        this.disabled = false;
+        this.innerHTML = '<i class="ti ti-refresh"></i> Sync Now';
+    })
+    .catch(() => {
+        showSyncAlert('Something went wrong. Please try again.', true);
         this.disabled = false;
         this.innerHTML = '<i class="ti ti-refresh"></i> Sync Now';
     });
 });
 </script>
 @endsection
-

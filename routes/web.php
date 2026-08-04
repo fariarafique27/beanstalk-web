@@ -50,11 +50,11 @@
         Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
         Route::get('/attendances/{id}', [AttendanceController::class, 'show'])->name('attendances.show');
         
-            Route::prefix('settings/device')->name('settings.device.')->group(function () {
-                Route::get('/', [DeviceSettingsController::class, 'edit'])->name('edit');
-                Route::post('/', [DeviceSettingsController::class, 'update'])->name('update');
-                Route::post('/sync', [DeviceSettingsController::class, 'sync'])->name('sync');
-            });
+        Route::prefix('settings/device')->name('settings.device.')->group(function () {
+            Route::get('/', [DeviceSettingsController::class, 'edit'])->name('edit');
+            Route::post('/', [DeviceSettingsController::class, 'update'])->name('update');
+            Route::post('/sync', [DeviceSettingsController::class, 'sync'])->name('sync');
+        });
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });

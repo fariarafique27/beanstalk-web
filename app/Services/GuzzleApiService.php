@@ -65,17 +65,44 @@ class   GuzzleApiService
             }
 
             return $this->errorResponse('Server responded with a status code of ' . $status, [], $status);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+
+        logger()->error("Guzzle Absolute Failure: " . $e->getMessage());
+
+        // If the backend actually responded (4xx/5xx with a JSON body),
+        // extract its real message/status instead of dumping the raw
+        // Guzzle exception text -- that's what the user should see.
+        if ($e->hasResponse()) {
+            $body = json_decode($e->getResponse()->getBody()->getContents(), true);
+
+            if (is_array($body) && isset($body['message'])) {
+                return [
+                    'success' => false,
+                    'message' => $body['message'],
+                    'status_code' => $e->getResponse()->getStatusCode(),
+                ];
+            }
+        }
+
+        // No usable response (connection refused, DNS failure, timeout
+        // before the backend even responded) -- fall back to a generic,
+        // user-safe message rather than the raw exception text.
+        return [
+            'success' => false,
+            'message' => 'Unable to reach the server. Please try again.',
+            'status_code' => 500
+        ];
+
         } catch (\Exception $e) {
 
-        // Log the EXACT error so we can see what's going wrong
         logger()->error("Guzzle Absolute Failure: " . $e->getMessage());
 
         return [
             'success' => false,
-            'message' => 'Guzzle Error: ' . $e->getMessage(),
+            'message' => 'Something went wrong. Please try again.',
             'status_code' => 500
         ];
-        }
+        }  
         
     }
 

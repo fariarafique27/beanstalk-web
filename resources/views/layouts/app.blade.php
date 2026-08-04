@@ -175,7 +175,7 @@
                     </a>
                 @endif
 
-              {{-- Link 3: Attendances --}}
+              <!-- {{-- Link 3: Attendances --}}
                 @if($userRole === 'super_admin' || in_array('attendances.view', $userPerms))
                     <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
                         <i class="ti ti-clock-check fs-5"></i> Attendances
@@ -191,6 +191,27 @@
 
                 {{-- Link 5: Device Settings (Visible if permitted) --}}
                 @if($userRole === 'super_admin' || in_array('device.manage', $userPerms))
+                    <a href="{{ route('settings.device.edit') }}" class="nav-link {{ request()->routeIs('settings.device.*') ? 'active' : '' }}">
+                        <i class="ti ti-settings fs-5"></i> Device Settings
+                    </a>
+                @endif -->
+
+                {{-- Link 3: Attendances --}}
+                @if($userRole !== 'super_admin' && in_array('attendances.view', $userPerms))
+                    <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
+                        <i class="ti ti-clock-check fs-5"></i> Attendances
+                    </a>
+                @endif
+
+                {{-- Link 4: Employees (Visible if permitted) --}}
+                @if($userRole !== 'super_admin' && in_array('employees.manage', $userPerms))
+                    <a href="#" class="nav-link">
+                        <i class="ti ti-users fs-5"></i> Employees
+                    </a>
+                @endif
+
+                {{-- Link 5: Device Settings (Visible if permitted) --}}
+                @if($userRole !== 'super_admin' && in_array('device.manage', $userPerms))
                     <a href="{{ route('settings.device.edit') }}" class="nav-link {{ request()->routeIs('settings.device.*') ? 'active' : '' }}">
                         <i class="ti ti-settings fs-5"></i> Device Settings
                     </a>
@@ -227,8 +248,7 @@
                         <i class="ti ti-building fs-5"></i> Organizations
                     </a>
                 @endif
-
-                @if($userRole === 'super_admin' || in_array('employees.manage', $userPerms))
+                <!-- @if($userRole === 'super_admin' || in_array('employees.manage', $userPerms))
                     <a href="#" class="nav-link">
                         <i class="ti ti-users fs-5"></i> Employees
                     </a>
@@ -240,10 +260,28 @@
                     </a>
                 @endif
                 @if($userRole === 'super_admin' || in_array('device.manage', $userPerms))
-                <a href="{{ route('settings.device.edit') }}" class="nav-link">
-                    <i class="ti ti-settings fs-5"></i> Device Settings
-                </a>
-            @endif
+                    <a href="{{ route('settings.device.edit') }}" class="nav-link">
+                        <i class="ti ti-settings fs-5"></i> Device Settings
+                    </a>
+               @endif -->
+
+               @if($userRole !== 'super_admin' && in_array('employees.manage', $userPerms))
+                    <a href="#" class="nav-link">
+                        <i class="ti ti-users fs-5"></i> Employees
+                    </a>
+                @endif
+
+                @if($userRole !== 'super_admin' && in_array('attendances.view', $userPerms))
+                    <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
+                        <i class="ti ti-clock-check fs-5"></i> Attendances
+                    </a>
+                @endif
+
+                @if($userRole !== 'super_admin' && in_array('device.manage', $userPerms))
+                    <a href="{{ route('settings.device.edit') }}" class="nav-link">
+                        <i class="ti ti-settings fs-5"></i> Device Settings
+                    </a>
+                @endif
 
             </nav>
             <div>

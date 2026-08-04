@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Super Admin Command Center')
+@section('title', 'Org Super Admin Command Center')
 
 @section('content')
 
@@ -40,7 +40,7 @@
 {{-- Dynamic Visual Stats Cards --}}
 <div class="row g-3 mb-4">
     <!-- Total Organizations Card -->
-    <div class="col-12 col-sm-6 col-lg-4">
+    <div class="col-12 col-sm-6 col-lg-6">
         <div class="card stat-card card-accent-primary shadow-sm rounded-4 p-3.5 p-md-4 bg-white h-100">
             <div class="d-flex align-items-start justify-content-between gap-2">
                 <div class="flex-grow-1 min-w-0">
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Active Admins Card -->
-    <div class="col-12 col-sm-6 col-lg-4">
+    <div class="col-12 col-sm-6 col-lg-6">
         <div class="card stat-card card-accent-success shadow-sm rounded-4 p-3.5 p-md-4 bg-white h-100">
             <div class="d-flex align-items-start justify-content-between gap-2">
                 <div class="flex-grow-1 min-w-0">
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Pending Invites Card -->
-    <div class="col-12 col-sm-12 col-lg-4">
+    <!-- <div class="col-12 col-sm-12 col-lg-4">
         <div class="card stat-card card-accent-warning shadow-sm rounded-4 p-3.5 p-md-4 bg-white h-100">
             <div class="d-flex align-items-start justify-content-between gap-2">
                 <div class="flex-grow-1 min-w-0">
@@ -95,20 +95,17 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 {{-- Main Data Section --}}
-<div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
     <div class="card-header bg-white border-bottom border-light p-3 p-md-3.5 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
         <div>
             <h5 class="fw-bold mb-0 text-dark">Organization Directory</h5>
             <span class="fs-8 text-secondary">Real-time listing of onboarded companies and access permissions</span>
         </div>
-        <div class="d-flex align-items-center gap-2 w-100 w-sm-auto">
-            <div class="input-group input-group-sm search-box w-100">
-                <span class="input-group-text bg-light border-0"><i class="ti ti-search text-secondary"></i></span>
-                <input type="text" class="form-control bg-light border-0" placeholder="Search organization...">
-            </div>
+        <div class="search-box-compact">
+            <i class="ti ti-search"></i>
+            <input type="text" id="orgSearchInput" placeholder="Search organization...">
         </div>
     </div>
 
@@ -116,12 +113,12 @@
         <table class="table table-borderless table-hover align-middle mb-0" style="min-width: 700px;">
             <thead class="bg-light-subtle text-secondary fs-8 text-uppercase tracking-wider">
                 <tr>
-                    <th class="ps-4">Organization</th>
+                    <th class="ps-5">Organization</th>
                     <th>Admin Name</th>
                     <th>Email Address</th>
                     <th>Status</th>
-                    <th>Permissions</th>
-                    <th class="pe-4 text-end">Action</th>
+                    <!-- <th>Permissions</th>
+                    <th class="pe-4 text-end">Action</th> -->
                 </tr>
             </thead>
             <tbody class="fs-7">
@@ -152,7 +149,7 @@
                             @endif
                         </td>
 
-                        <td>
+                        <!-- <td>
                             <div class="d-flex gap-1 flex-wrap">
                                 @php
                                     $rawPerms = $org['permissions'] ?? ['Standard'];
@@ -226,11 +223,11 @@
                                     </li>
                                 </ul>
                             </div>
-                        </td>
+                        </td> -->
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center py-5">
+                        <td colspan="4" class="text-center py-5">
                             <div class="empty-state p-4">
                                 <div class="bg-light rounded-circle d-inline-flex p-3 mb-3 text-secondary">
                                     <i class="ti ti-building-off fs-1"></i>
@@ -313,5 +310,41 @@
         </div>
     </div>
 </div>
+
+
+<style>
+    .search-box-compact {
+        display: flex;
+        align-items: center;
+        background: #f1f3f5;
+        border-radius: 8px;
+        padding: 6px 10px;
+        gap: 6px;
+        width: 220px;
+        transition: width 0.15s ease;
+        flex-shrink: 0;
+    }
+    .search-box-compact:focus-within {
+        width: 260px;
+        background: #e9ecef;
+    }
+    .search-box-compact i {
+        color: #6c757d;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    .search-box-compact input {
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 0.8rem;
+        width: 100%;
+        color: #212529;
+    }
+    @media (max-width: 576px) {
+        .search-box-compact { width: 100%; }
+    }
+</style>
+
 
 @endsection
