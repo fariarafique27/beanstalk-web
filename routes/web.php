@@ -9,6 +9,7 @@
     use App\Http\Controllers\OrgAdminController;
     use App\Http\Controllers\CompanyController;
     use App\Http\Controllers\AttendanceController;
+     use App\Http\Controllers\DeviceSettingsController;
 
     Route::get('/', [CompanyController::class, 'dashboard']);
 
@@ -29,10 +30,7 @@
     // Protected Super Admin Routes
     Route::middleware([EnsureFrontendAuthenticated::class])->group(function () {
 
-        // Route 1: The standard Dashboard (Shows welcome message)
-        // Route::get('/dashboard', function () {
-        //     return view('dashboard'); // Your welcome view
-        // })->name('dashboard');
+        // Route 1: The standard Dashboard
         Route::get('/dashboard',[CompanyController::class,'dashboard'])->name('dashboard');
 
         // Route 2: The Organizations page (Shows the organization management table)
@@ -52,5 +50,11 @@
         Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
         Route::get('/attendances/{id}', [AttendanceController::class, 'show'])->name('attendances.show');
         
+            Route::prefix('settings/device')->name('settings.device.')->group(function () {
+                Route::get('/', [DeviceSettingsController::class, 'edit'])->name('edit');
+                Route::post('/', [DeviceSettingsController::class, 'update'])->name('update');
+                Route::post('/sync', [DeviceSettingsController::class, 'sync'])->name('sync');
+            });
+
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });

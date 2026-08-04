@@ -13,7 +13,8 @@ class AuthService extends GuzzleApiService
             return view('auth.login');
         }
 
-        return redirect()->route('dashboard');
+         return redirect()->intended(route('dashboard'));
+        //return redirect()->route('dashboard');
     }
 
     public function redirectToLogin(){

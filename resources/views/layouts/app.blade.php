@@ -189,13 +189,12 @@
                     </a>
                 @endif
 
-                {{-- Link 5: Invite Admin (Visible if permitted) --}}
-                @if($userRole === 'super_admin' || in_array('org-admins.invite', $userPerms))
-                    <a href="{{ route('org-admins.invite') }}" class="nav-link">
-                        <i class="ti ti-building-community fs-5"></i> Invite Admin
+                {{-- Link 5: Device Settings (Visible if permitted) --}}
+                @if($userRole === 'super_admin' || in_array('device.manage', $userPerms))
+                    <a href="{{ route('settings.device.edit') }}" class="nav-link {{ request()->routeIs('settings.device.*') ? 'active' : '' }}">
+                        <i class="ti ti-settings fs-5"></i> Device Settings
                     </a>
                 @endif
-
             </nav>
         </div>
 
@@ -235,17 +234,16 @@
                     </a>
                 @endif
 
-                @if($userRole === 'super_admin' || in_array('org-admins.invite', $userPerms))
-                    <a href="{{ route('org-admins.invite') }}" class="nav-link">
-                        <i class="ti ti-building-community fs-5"></i> Invite Admin
-                    </a>
-                @endif
-
                 @if($userRole === 'super_admin' || in_array('attendances.view', $userPerms))
                     <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
                         <i class="ti ti-clock-check fs-5"></i> Attendances
                     </a>
                 @endif
+                @if($userRole === 'super_admin' || in_array('device.manage', $userPerms))
+                <a href="{{ route('settings.device.edit') }}" class="nav-link">
+                    <i class="ti ti-settings fs-5"></i> Device Settings
+                </a>
+            @endif
 
             </nav>
             <div>
