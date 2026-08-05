@@ -143,9 +143,9 @@
     @endphp
 
     {{-- TEMPORARY DEBUG: Delete this after checking --}}
-    <!-- <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
+    <div style="background: yellow; color: black; padding: 10px; z-index: 9999; position: relative;">
         Role: {{ $userRole }} | Perms: {{ json_encode($userPerms) }}
-    </div>   -->
+    </div>  
 
     <!-- Desktop Sidebar -->
     <aside class="sidebar d-none d-lg-flex flex-column justify-content-between p-3">

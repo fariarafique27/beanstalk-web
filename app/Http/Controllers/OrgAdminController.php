@@ -4,62 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\AuthService;
+use App\Services\OrgAdminService;
 
 class OrgAdminController extends Controller
 {
     protected $authService;
+    protected $orgAdminService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(OrgAdminService $orgAdminService , AuthService $authService )
     {
         $this->authService = $authService;
+        $this->orgAdminService = $orgAdminService;
     }
 
-    
     public function index()
     {
-        $userData = session('user', []);
-        $userRole = session('role') ?? $userData['role'] ?? 'admin';
-        $userPerms = session('permissions', $userData['permissions'] ?? []);
-
-        if ($userRole !== 'super_admin' && $userRole !== 'super-admin' && !in_array('read_organizations', $userPerms) && !in_array('manage_organizations', $userPerms)) {
-            return redirect()->route('dashboard')
-                ->withErrors(['error' => 'You do not have permission to access Organizations.']);
+        try {
+            return $this->orgAdminService->getOrganizations(); 
+        } catch (\Throwable $e) {
+            return $this->getException($e);
         }
-
-        $response = $this->authService->get('organizations'); 
-
-        // --- TEMPORARY DEBUGGING LINE ---
-        // Uncomment the line below to view the exact structure of your API response on the screen:
-        // dd($response);
-
-        // Flexible fallback keys to catch whatever structure your backend returns:
-        $organizations = $response['organizations'] ?? $response['data']['organizations'] ?? $response['data'] ?? [];
-        
-        // If it's a paginator object or nested collection, normalize it to an array:
-        if (is_object($organizations)) {
-            $organizations = json_decode(json_encode($organizations), true);
-        }
-        
-        if (!is_array($organizations)) {
-            $organizations = [];
-        }
-
-        $stats = $response['stats'] ?? $response['data']['stats'] ?? [
-            'total_orgs' => count($organizations),
-            'active_admins' => collect($organizations)->where('status', 'active')->count(),
-            'pending_invites' => collect($organizations)->where('status', '!=', 'active')->count()
-        ];
-
-       // return view('organizations.index', compact('organizations', 'stats'));
-
-       $permResponse = \Illuminate\Support\Facades\Http::get('http://127.0.0.1:8000/api/permissions');
-        $permissions = $permResponse->successful() ? $permResponse->json('data') : [];
-        // -------------------------------------
-
-        // Pass $permissions into the view along with your other variables
-        return view('organizations.index', compact('organizations', 'stats', 'permissions'));
-        
     }
+
 
     public function createOrgAdmin()
     {
@@ -81,36 +47,7 @@ class OrgAdminController extends Controller
        return view('org-admins.invite', compact('permissions'));
     }
 
-    // public function storeOrgAdmin(Request $request)
-    // {
-    //     logger('--- 1. STORE ORG ADMIN CALLED ---', [
-    //         'all_input' => $request->all(),
-    //         'permissions' => $request->input('permissions')
-    //     ]);
-
-    //     $userData = session('user', []);
-    //     $userRole = session('role') ?? $userData['role'] ?? 'admin';
-    //     $userPerms = session('permissions', $userData['permissions'] ?? []);
-
-    //     if ($userRole !== 'super_admin' && $userRole !== 'super-admin' && !in_array('org-admins.invite', $userPerms)) {
-    //         logger('--- 2. UNAUTHORIZED ACCESS ATTEMPT ---', ['role' => $userRole, 'perms' => $userPerms]);
-    //         return redirect()->route('dashboard')
-    //             ->withErrors(['error' => 'Unauthorized action.']);
-    //     }
-
-    //    logger('--- 3. SENDING REQUEST TO AUTH SERVICE ---', $request->all());
-    //     $response = $this->authService->post('org-admins/invite', $request->all());
-
-    //     logger('--- 4. RESPONSE RECEIVED FROM AUTH SERVICE ---', ['response' => $response]);
-    //     if (!$response['success']) {
-    //         return redirect()->back()
-    //             ->withErrors($response['errors'] ?? ['error' => $response['message']])
-    //             ->withInput();
-    //     }
-
-    //     // ADD IT HERE (For successful form submission)
-    //     return redirect()->route('organizations.index')->with('success', $response['message']);
-    // }
+    
 
     public function storeOrgAdmin(Request $request)
     {
