@@ -15,12 +15,8 @@
 
 
     Route::get('/login', [AuthController::class, 'getLogin'])->name('login');
-    // Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-     Route::post('/login', [AuthController::class, 'postLogin'])->name('login.submit');
+    Route::post('/login', [AuthController::class, 'postLogin'])->name('login.submit');
     Route::get('redirectToLogin',[AuthController::class,'redirectToLogin'])->name('redirectToLogin');
-
-    //TODO:::::::::::
-    // Route::post('login',[AuthController::class,'postLogin'])->name('login.post');
 
 
     // Account activation / Set Password link from invite email
