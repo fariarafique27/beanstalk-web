@@ -16,26 +16,27 @@ class OrgAdminService extends GuzzleApiService
         $userRole = session('role') ?? $userData['role'] ?? 'admin';
         $userPerms = session('permissions', $userData['permissions'] ?? []);
 
-        // Check if user has permission
         if ($userRole !== 'super_admin' 
             && !in_array('read_organizations', $userPerms) 
             && !in_array('manage_organizations', $userPerms)) {
             throw new \Exception('You do not have permission to access Organizations.');
         }
 
-        // Fetch organizations from API
+        // Fetch organizations from backend API
         $response = $this->get('organizations');
 
+        logger('Organizations API Response:', $response);
+
         // Handle error responses
-        if (isset($response['success']) && !$response['success']) {
+        if (!isset($response['success']) || !$response['success']) {
             throw new \Exception($response['message'] ?? 'Failed to fetch organizations');
         }
 
-        // Normalize data - flexible fallback keys
-        $organizations = $response['organizations'] 
-            ?? $response['data']['organizations'] 
-            ?? $response['data'] 
-            ?? [];
+        // Extract data from backend response structure
+        // Backend returns: { success, message, data: { organizations, stats } }
+        $data = $response['data'] ?? [];
+        $organizations = $data['organizations'] ?? [];
+        $stats = $data['stats'] ?? [];
 
         // Convert objects to arrays if needed
         if (is_object($organizations)) {
@@ -47,13 +48,14 @@ class OrgAdminService extends GuzzleApiService
             $organizations = [];
         }
 
-        // Calculate stats
-        $stats = $response['stats'] 
-            ?? $response['data']['stats'] 
-            ?? $this->calculateStats($organizations);
+        // Transform organizations to match table structure
+        $organizations = $this->transformOrganizations($organizations);
 
-        // Fetch permissions
+        // Fetch permissions for modal
         $permissions = $this->getPermissions();
+
+        logger('Transformed Organizations:', $organizations);
+        logger('Stats:', $stats);
 
         // Return view with all data
         return view('organizations.index', [
@@ -64,40 +66,50 @@ class OrgAdminService extends GuzzleApiService
     }
 
     /**
-     * Calculate organization statistics
+     * Transform backend organization structure to match table display
      * 
      * @param array $organizations
      * @return array
      */
-    private function calculateStats(array $organizations): array
+    private function transformOrganizations(array $organizations): array
     {
-        return [
-            'total_orgs' => count($organizations),
-            'active_admins' => collect($organizations)
-                ->where('status', 'active')
-                ->count(),
-            'pending_invites' => collect($organizations)
-                ->where('status', '!=', 'active')
-                ->count()
-        ];
+        return collect($organizations)->map(function ($org) {
+            // Get first user/admin
+            $admin = null;
+            if (isset($org['users']) && is_array($org['users']) && count($org['users']) > 0) {
+                $admin = $org['users'][0];
+            }
+
+            return [
+                'id' => $org['id'] ?? null,
+                'org_name' => $org['name'] ?? 'N/A',
+                'admin_name' => $admin['name'] ?? 'Unassigned',
+                'admin_email' => $admin['email'] ?? 'N/A',
+                'status' => $org['status'] == 1 ? 'active' : 'pending',
+                'permissions' => $org['permissions'] ?? [],
+                'users' => $org['users'] ?? [],
+                'email' => $org['email'] ?? 'N/A',
+            ];
+        })->toArray();
     }
 
     /**
-     * Fetch permissions from the API
+     * Get all permissions from backend
      * 
      * @return array
      */
-    public function getPermissions()
+    private function getPermissions(): array
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::get(
-                config('api.base_url') . 'permissions'
-            );
-
-            return $response->successful() ? $response->json('data', []) : [];
+            $response = $this->get('permissions');
+            
+            if (isset($response['success']) && $response['success']) {
+                return $response['data'] ?? [];
+            }
         } catch (\Exception $e) {
-            logger()->warning('Failed to fetch permissions: ' . $e->getMessage());
-            return [];
+            logger()->warning('Failed to fetch permissions', ['error' => $e->getMessage()]);
         }
+
+        return [];
     }
 }
