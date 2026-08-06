@@ -9,7 +9,8 @@
     use App\Http\Controllers\OrgAdminController;
     use App\Http\Controllers\CompanyController;
     use App\Http\Controllers\AttendanceController;
-     use App\Http\Controllers\DeviceSettingsController;
+    use App\Http\Controllers\UserController;
+    use App\Http\Controllers\DeviceSettingsController;
 
     Route::get('/', [CompanyController::class, 'dashboard']);
 
@@ -51,6 +52,13 @@
             Route::post('/', [DeviceSettingsController::class, 'update'])->name('update');
             Route::post('/sync', [DeviceSettingsController::class, 'sync'])->name('sync');
         });
+
+
+        // User routes
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+       // TODO 
+        // Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+        // Route::get('/users/{id}', [App\Http\Controllers\UserController::class, 'show'])->name('users.show');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });

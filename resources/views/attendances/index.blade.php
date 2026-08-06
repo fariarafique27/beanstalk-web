@@ -206,6 +206,12 @@
                                     @endif
                                 </td>
                                 <td class="pe-4 text-end">
+                                    <button class="btn btn-sm btn-light rounded-circle p-2" data-bs-toggle="modal" data-bs-target="#inviteUserModalAttendance">
+                                        <i class="ti ti-user-plus text-primary fs-5"></i>
+                                    </button>
+                                </td>
+
+                                <td class="pe-4 text-end">
                                     <a href="{{ route('attendances.show', $itemArray['employee_id'] ?? ($rowUserId ?: 1)) }}" class="btn btn-light btn-sm rounded-2 fw-semibold px-2.5 py-1.5 d-inline-flex align-items-center gap-1 text-primary">
                                         <i class="ti ti-history fs-5"></i> History Logs
                                     </a>
@@ -241,6 +247,7 @@
             @endif
         </div>
     </div>
+    
 </div>
 
 <script>
@@ -280,4 +287,6 @@ document.addEventListener('DOMContentLoaded', function () {
     searchInput.addEventListener('input', applyFilters);
 });
 </script>
+@include('invite-user-modal')
+
 @endsection
